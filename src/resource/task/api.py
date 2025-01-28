@@ -3,14 +3,14 @@ from sqlalchemy.orm import Session
 from src.resource.task.schema import Tasks_schema,Update_task_schema
 from src.functionallity.task import create_task,get_task,update_task,delete_task
 from database.database import get_db
-from fastapi.security import HTTPAuthorizationCredentials,HTTPBearer
+from fastapi.security import HTTPBearer
 
 security = HTTPBearer()
 
 task_router = APIRouter(tags=['CURD Task by User'])
 
 @task_router.post("/create_task")
-def create_user_task(task:Tasks_schema,db:Session=Depends(get_db),token:HTTPAuthorizationCredentials=Security(security)):
+def create_user_task(task:Tasks_schema,db:Session=Depends(get_db),token:str=Security(security)):
     try:
         response = create_task(task=task,db=db,token=token)
         return response

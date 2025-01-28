@@ -3,7 +3,7 @@ from database.database import get_db
 from sqlalchemy.orm import Session
 from src.resource.task.model import Task_model
 from src.resource.task.schema import Tasks_schema,Update_task_schema
-from fastapi.security import HTTPAuthorizationCredentials,HTTPBearer
+from fastapi.security import HTTPBearer
 from src.utils.utils import verify_token
 
 security = HTTPBearer()

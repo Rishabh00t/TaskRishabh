@@ -1,13 +1,17 @@
+from datetime import datetime, timedelta
 from fastapi import APIRouter,Depends,HTTPException,Header, Security
 from typing import Annotated
 from src.resource.user.model import User_model
 from src.resource.user.schema import User_schema,Login_schema
 from sqlalchemy.orm import Session
+import jwt
 from database.database import get_db
 from src.utils.utils import verify_token
 from src.functionallity.user import create_user,loginuser,get_all_user_by_admin,get_current_user,delete_all_user_by_admin
 from fastapi.security import OAuth2PasswordBearer,HTTPBearer
+from src.config import ACCESS_TOKEN_EXPIRE_MINUTES,SECRET_KEY,ALGORITHM,REFRESH_TOKEN_EXPIRE_DAY
 
+# from fastapi_jwt_auth import AuthJWT
 user_router = APIRouter()
 
 security = HTTPBearer()
@@ -56,6 +60,43 @@ def get_current(db:Session = Depends(get_db), auth_token:str=Security(security))
         return response
     except Exception as e:
         raise HTTPException(status_code=500,detail=str(e))
+    
+@user_router.post("/get_refresh_token")
+def create_refresh_token(token:str=Security(security),expire_delta:timedelta=None):
+    try:
+        payload = jwt.decode(token,SECRET_KEY,algorithms=ALGORITHM)
+
+        if expire_delta:
+            expire = datetime.utcnow() + expire_delta 
+        else: 
+            expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        payload.update({"exp": expire})
+        encoded_jwt = jwt.encode(payload,SECRET_KEY,algorithm=ALGORITHM)
+        return encoded_jwt
+    except Exception as e:
+        raise HTTPException(status_code=500,detail=str(e))
+# @user_router.post("/refresh")
+# async def refresh_token(refresh_token: str = Depends(check_cookie), db: Session = Depends(get_db)):
+#     """
+#     Create a refresh token route
+#     """
+#     if not refresh_token:
+#         raise HTTPException(status_code=401, detail="No refresh token")
+#     decoded_token = await decode_token(refresh_token, 'id', type='refresh')
+#     if not decoded_token:
+#         raise HTTPException(status_code=401, detail="Invalid refresh token")
+#     user = get_user_by_id(db, decoded_token)
+#     if not user:
+#         raise HTTPException(status_code=401, detail="User does not exist")
+#     access_token = create_access_token(data={"sub": user.email})
+#     return JSONResponse({"token": access_token, "email": user.email}, status_code=200)
+    
+# @user_router.post('/refresh')
+# def refresh(Authorize: AuthJWT = Depends()):
+#     Authorize.jwt_refresh_token_required()
+#     current_user = Authorize.get_jwt_subject()
+#     new_access_token = Authorize.create_access_token(subject=current_user)
+#     return {"access_token": new_access_token}
 # @user_router.post("/refresh")  
 # async def refresh_access_token(token_data: Annotated[tuple[User_model, str], Depends(verify_token)]):  
 #     user, token = token_data  
