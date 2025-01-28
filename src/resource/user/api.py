@@ -65,14 +65,18 @@ def get_current(db:Session = Depends(get_db), auth_token:str=Security(security))
 def create_refresh_token(token:str=Security(security),expire_delta:timedelta=None):
     try:
         payload = jwt.decode(token,SECRET_KEY,algorithms=ALGORITHM)
-
+        print(f"the payload is {payload}")
         if expire_delta:
             expire = datetime.utcnow() + expire_delta 
         else: 
             expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
         payload.update({"exp": expire})
         encoded_jwt = jwt.encode(payload,SECRET_KEY,algorithm=ALGORITHM)
-        return encoded_jwt
+        return {
+            "success":True,
+            "print":"new access token",
+            "access_token":encoded_jwt
+        }
     except Exception as e:
         raise HTTPException(status_code=500,detail=str(e))
 # @user_router.post("/refresh")

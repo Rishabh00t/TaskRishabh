@@ -22,7 +22,7 @@ def create_refresh_token(data:dict,expire_delta:timedelta=None):
     if expire_delta:
         expire = datetime.utcnow() + expire_delta 
     else: 
-        expire = datetime.utcnow() + timedelta(minutes=REFRESH_TOKEN_EXPIRE_DAY)
+        expire = datetime.utcnow() + timedelta(days=REFRESH_TOKEN_EXPIRE_DAY)
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode,SECRET_KEY,algorithm=ALGORITHM)
     return encoded_jwt
