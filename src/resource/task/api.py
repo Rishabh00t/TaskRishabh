@@ -33,7 +33,7 @@ def update_user_task(task:Update_task_schema,db:Session=Depends(get_db)):
     except Exception as e:
         raise HTTPException(status_code=500,detail=str(e))
     
-@task_router.delete("/delete_data")
+@task_router.delete("/delete_task")
 def delete_user_task(task_id:int,db:Session=Depends(get_db)):
     try:
         response = delete_task(task_id,db)

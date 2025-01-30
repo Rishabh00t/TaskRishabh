@@ -18,7 +18,7 @@ def create_task(task:Tasks_schema,
         if not user["id"]:
             raise HTTPException(status_code=403,detail="yo do not have permission to create this task.")
         # breakpoint()
-        task_data = Task_model(title=task.title,description=task.description,status=task.status)
+        task_data = Task_model(title=task.title,description=task.description,status=task.status,owner_id = user["id"])
         db.add(task_data)
         db.commit()
         db.refresh(task_data)

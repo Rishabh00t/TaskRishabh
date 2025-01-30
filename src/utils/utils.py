@@ -5,7 +5,7 @@ from src.config import ACCESS_TOKEN_EXPIRE_MINUTES,SECRET_KEY,ALGORITHM,REFRESH_
 from fastapi import HTTPException
 
 password_hash =CryptContext(schemes=['bcrypt'],deprecated="auto")
-
+REFRESH_SECRET_KEY="hyy"
 
 def create_access_token(data:dict,expire_delta:timedelta=None):
     to_encode = data.copy()
@@ -29,7 +29,7 @@ def create_refresh_token(data:dict,expire_delta:timedelta=None):
 
 def verify_token(token:str):
     try:
-        payload = jwt.decode(token,SECRET_KEY,algorithms=ALGORITHM)
+        payload = jwt.decode(token,REFRESH_SECRET_KEY,algorithms=ALGORITHM)
         return payload
     except JWTError as e:
         raise HTTPException(status_code=401,detail=str(e))

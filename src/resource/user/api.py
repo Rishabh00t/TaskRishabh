@@ -4,15 +4,17 @@ from typing import Annotated
 from src.resource.user.model import User_model
 from src.resource.user.schema import User_schema,Login_schema
 from sqlalchemy.orm import Session
-import jwt
+from jose import jwt,JWTError
 from database.database import get_db
-from src.utils.utils import verify_token
+from src.utils.utils import verify_token,create_access_token
 from src.functionallity.user import create_user,loginuser,get_all_user_by_admin,get_current_user,delete_all_user_by_admin
 from fastapi.security import OAuth2PasswordBearer,HTTPBearer
 from src.config import ACCESS_TOKEN_EXPIRE_MINUTES,SECRET_KEY,ALGORITHM,REFRESH_TOKEN_EXPIRE_DAY
 
 # from fastapi_jwt_auth import AuthJWT
 user_router = APIRouter()
+
+REFRESH_SECRET_KEY="hyy"
 
 security = HTTPBearer()
 oauth2_schema = OAuth2PasswordBearer(tokenUrl="token")
@@ -61,22 +63,24 @@ def get_current(db:Session = Depends(get_db), auth_token:str=Security(security))
     except Exception as e:
         raise HTTPException(status_code=500,detail=str(e))
     
-@user_router.post("/get_refresh_token")
-def create_refresh_token(token:str=Security(security),expire_delta:timedelta=None):
+# def create_jwt_token(data:dict,expires_delta:timedelta,secret_key:str):
+#     expire = datetime.utcnow()+expires_delta
+#     data.update({"exp":expire})
+#     return jwt.decode(data,secret_key,algorithms=ALGORITHM)
+
+@user_router.post("/get_new_access_token")
+def create_access(refresh_token:str=Security(security)):
     try:
+        # breakpoint()
+        token = refresh_token.credentials
+
         payload = jwt.decode(token,SECRET_KEY,algorithms=ALGORITHM)
-        print(f"the payload is {payload}")
-        if expire_delta:
-            expire = datetime.utcnow() + expire_delta 
-        else: 
-            expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-        payload.update({"exp": expire})
-        encoded_jwt = jwt.encode(payload,SECRET_KEY,algorithm=ALGORITHM)
-        return {
-            "success":True,
-            "print":"new access token",
-            "access_token":encoded_jwt
-        }
+        new_access_token = create_access_token(
+            data={"sub":payload["sub"]},
+            expire_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES),
+            secret_key = SECRET_KEY
+        )
+        return {"access_token":new_access_token}
     except Exception as e:
         raise HTTPException(status_code=500,detail=str(e))
 # @user_router.post("/refresh")

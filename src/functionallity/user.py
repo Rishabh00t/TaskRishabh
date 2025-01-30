@@ -53,15 +53,16 @@ def loginuser(user:User_schema,db:Session=Depends(get_db)):
 
 def get_current_user(db:Session = Depends(get_db), auth_token:str=Security(security)):
     try:
+        token = (auth_token.credentials)
         token_exception = HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid authentication credentials",
             headers={"Auth-Token": ""},)
-        if not auth_token:
+        if not token:
             raise token_exception
-        username: str = verify_token (auth_token)
-        if username:
-            user = loginuser(db, username)
+        user_id: int = verify_token(token)
+        if user_id:
+            user = loginuser(db, user_id)
             return user
         raise token_exception
     except Exception as e:
