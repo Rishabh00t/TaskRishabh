@@ -29,7 +29,7 @@ def create_refresh_token(data:dict,expire_delta:timedelta=None):
 
 def verify_token(token:str):
     try:
-        payload = jwt.decode(token,REFRESH_SECRET_KEY,algorithms=ALGORITHM)
+        payload = jwt.decode(token,SECRET_KEY,algorithms=ALGORITHM)
         return payload
     except JWTError as e:
         raise HTTPException(status_code=401,detail=str(e))

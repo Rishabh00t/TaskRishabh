@@ -51,26 +51,29 @@ def loginuser(user:User_schema,db:Session=Depends(get_db)):
     except Exception as e:
         raise HTTPException(status_code=500,detail=str(e))
 
-def get_current_user(db:Session = Depends(get_db), auth_token:str=Security(security)):
-    try:
-        token = (auth_token.credentials)
-        token_exception = HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid authentication credentials",
-            headers={"Auth-Token": ""},)
-        if not token:
-            raise token_exception
-        user_id: int = verify_token(token)
-        if user_id:
-            user = loginuser(db, user_id)
-            return user
-        raise token_exception
-    except Exception as e:
-        raise HTTPException(status_code=500,detail=str(e))
+# def get_current_user(db:Session = Depends(get_db), auth_token:str=Security(security)):
+#     try:
+#         token = (auth_token.credentials)
+#         token_exception = HTTPException(
+#             status_code=status.HTTP_401_UNAUTHORIZED,
+#             detail="Invalid authentication credentials",
+#             headers={"Auth-Token": ""},)
+#         if not token:
+#             raise token_exception
+#         user_id: int = verify_token(token)
+#         if user_id:
+#             user = loginuser(db, user_id)
+#             return user
+#         raise token_exception
+#     except Exception as e:
+#         raise HTTPException(status_code=500,detail=str(e))
 
 
-def get_all_user_by_admin(db:Session=Depends(get_db),user:User_model = Depends(get_current_user)):
+def get_all_user_by_admin(user_id:int,db:Session=Depends(get_db)):
     try:
+
+        user = db.query(User_model).filter(User_model.id == user_id).first()
+        
         # breakpoint()
         if user.role != 'admin':
             raise HTTPException(status_code=403, detail="Operation not permitted")
@@ -79,15 +82,25 @@ def get_all_user_by_admin(db:Session=Depends(get_db),user:User_model = Depends(g
     except Exception as e:
         raise HTTPException(status_code=500,detail=str(e))
     
-def delete_all_user_by_admin(db:Session=Depends(get_db),user:User_model = Depends(get_current_user)):
+def delete_all_user_by_admin(user_id:int,db:Session=Depends(get_db)):
     try:
+        user = db.query(User_model).filter(User_model.id == user_id).first()
+        
         if user.role != 'admin':
             raise HTTPException(
                 status_code=403,
                 detail="Operation not permitted"
             )
-        user1 = db.query(User_model).all()
-        db.delete(user1)
-        db.commit()
+        if user.role == 'user':
+            db.query(User_model).delete()
+            return {
+                "message":"all User delete"
+            }
+        return {
+            "message":"NO user"
+        }
+        # user1 = db.query(User_model).delete()
+        # # db.delete(user1)
+        # db.commit()
     except Exception as e:
         raise HTTPException (status_code=500,detail=str(e))
