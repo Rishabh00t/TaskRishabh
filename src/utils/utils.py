@@ -1,8 +1,13 @@
 from passlib.context import CryptContext
 from jose import jwt,JWTError
 from datetime import datetime,timedelta
-from src.config import ACCESS_TOKEN_EXPIRE_MINUTES,SECRET_KEY,ALGORITHM,REFRESH_TOKEN_EXPIRE_DAY
+from src.config import Config
 from fastapi import HTTPException
+
+SECRET_KEY = Config.SEC_KEY
+ALGORITHM = Config.ALGO
+ACCESS_TOKEN_EXPIRE_MINUTES = Config.ACCESS_TOKEN_EXPIRE
+REFRESH_TOKEN_EXPIRE_DAY = Config.REFRESH_TOKEN_EXPIRE
 
 password_hash =CryptContext(schemes=['bcrypt'],deprecated="auto")
 REFRESH_SECRET_KEY="hyy"
